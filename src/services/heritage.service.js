@@ -5,7 +5,7 @@ const ttsService = require('./tts.service');
 const { SUPPORTED_LANGUAGES } = require('../utils/constants');
 const fs = require('fs').promises;
 const path = require('path');
-
+const BASE_URL = process.env.BASE_URL || 'https://adm.gddpcamau.io.vn';
 class HeritageService {
   // Tạo di sản mới + dịch + tạo audio cho 4 ngôn ngữ
   async create(data, files) {
@@ -45,11 +45,6 @@ class HeritageService {
           translatedName = await translationService.translate(name, input_lang, lang.code);
           translatedInfo = await translationService.translate(information, input_lang, lang.code);
         }
-
-        // Tạo audio từ information
-        // const audioFilename = `${heritageId}_${lang.code}.wav`;
-        // console.log(`[TTS] Generating ${audioFilename}...`);
-        // const audioUrl = await ttsService.generateAudio(translatedInfo, lang.code, audioFilename);
 
         let audioUrl = null;
 
@@ -242,7 +237,11 @@ class HeritageService {
     const total = parseInt(countResult.rows[0].count);
 
     return {
-      data: result.rows,
+      data: result.rows.map(row => ({
+        ...row,
+        image_url: row.image_url ? BASE_URL + row.image_url : null,
+        audio_url: row.audio_url ? BASE_URL + row.audio_url : null
+      })),
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
     };
   }
@@ -267,8 +266,12 @@ class HeritageService {
       [id]
     );
 
+    const heritage = result.rows[0];
+
     return {
-      ...result.rows[0],
+      ...heritage,
+      image_url: heritage.image_url ? BASE_URL + heritage.image_url : null,
+      audio_url: heritage.audio_url ? BASE_URL + heritage.audio_url : null,
       available_languages: langsResult.rows.map(r => r.lang)
     };
   }
