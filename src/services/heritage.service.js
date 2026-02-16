@@ -16,6 +16,7 @@ class HeritageService {
       address, commune, district, province, notes, input_lang = 'vi',
       youtube_links = [], // Array of YouTube links
       coordinates, // array of lat, long
+      category
     } = data;
 
     // Parse youtube_links if it's a string
@@ -33,13 +34,13 @@ class HeritageService {
 
     // 1. Insert heritage
     const heritageResult = await db.query(
-      `INSERT INTO heritages (year_built, year_ranked, ranking_type, address, commune, district, province, image_url, notes, original_lang, image360, coordinates)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO heritages (year_built, year_ranked, ranking_type, address, commune, district, province, image_url, notes, original_lang, image360, coordinates, category)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING id`,
       [
         year_built, year_ranked, ranking_type, address, commune, district, province,
         files?.image?.[0]?.filename ? `/uploads/images/${files.image[0].filename}` : null,
-        notes, input_lang, image360Path, parsedCoordinates
+        notes, input_lang, image360Path, parsedCoordinates, category
       ]
     );
     const heritageId = heritageResult.rows[0].id;
@@ -135,8 +136,8 @@ class HeritageService {
       regenerate_translations = false, // Option để tạo lại bản dịch
       youtube_links = [], // Array of YouTube links
       keep_media_ids = [], // Array of media IDs to keep (for managing deletions)
-      image360,
       coordinates,
+      category,
     } = data;
 
     // Parse arrays if they're strings
@@ -192,10 +193,10 @@ class HeritageService {
       `UPDATE heritages SET
         year_built = $1, year_ranked = $2, ranking_type = $3,
         address = $4, commune = $5, district = $6, province = $7,
-        image_url = $8, notes = $9, original_lang = $10, image360 = $11, coordinates = $12, updated_at = NOW()
-       WHERE id = $13`,
+        image_url = $8, notes = $9, original_lang = $10, image360 = $11, coordinates = $12, category = $13, updated_at = NOW()
+       WHERE id = $14`,
       [year_built, year_ranked, ranking_type, address, commune, district, province,
-        imageUrl, notes, input_lang, newImage360, parsedCoordinates, id]
+        imageUrl, notes, input_lang, newImage360, parsedCoordinates, category, id]
     );
     console.log(`[Heritage] Updated ID: ${id}`);
 
@@ -371,7 +372,7 @@ class HeritageService {
 
     const result = await db.query(
       `SELECT h.id, h.year_built, h.year_ranked, h.ranking_type,
-              h.address, h.commune, h.district, h.province, h.image_url,
+              h.address, h.commune, h.district, h.province, h.image_url, h.category,
               t.name, t.information, t.audio_url, h.image360, h.coordinates
        FROM heritages h
        LEFT JOIN heritage_translations t ON h.id = t.heritage_id AND t.lang = $1

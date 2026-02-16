@@ -8,10 +8,13 @@ const audioDir = path.join(__dirname, '../../uploads/audio');
 const imageDir = path.join(__dirname, '../../uploads/images');
 const galleryDir = path.join(__dirname, '../../uploads/gallery');
 const image360Dir = path.join(__dirname, '../../uploads/image360');
+const fineArtDir = path.join(__dirname, '../../uploads/fineart');
+
 fs.mkdirSync(audioDir, { recursive: true });
 fs.mkdirSync(imageDir, { recursive: true });
 fs.mkdirSync(galleryDir, { recursive: true });
 fs.mkdirSync(image360Dir, { recursive: true });
+fs.mkdirSync(fineArtDir, { recursive: true });
 
 // Storage config
 const storage = multer.diskStorage({
@@ -24,6 +27,8 @@ const storage = multer.diskStorage({
       cb(null, galleryDir);
     } else if (file.fieldname === 'image360') {
       cb(null, image360Dir)
+    } else if (file.fieldname === 'fineart') {
+      cb(null, fineArtDir)
     }
     else {
       cb(null, path.join(__dirname, '../../uploads'));
@@ -44,7 +49,7 @@ const fileFilter = (req, file, cb) => {
     // Allow audio up to 50MB (checked later by multer limit)
     cb(null, true);
 
-  } else if (file.fieldname === 'image' || file.fieldname === 'gallery') {
+  } else if (file.fieldname === 'image' || file.fieldname === 'gallery' || file.fieldname === 'fineart') {
     if (!file.mimetype.startsWith('image/')) {
       return cb(new Error('Only image files allowed'), false);
     }

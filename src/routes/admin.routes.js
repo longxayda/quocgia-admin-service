@@ -12,6 +12,7 @@ const uploadFieldsMiddleware = (req, res, next) => {
     { name: 'audio', maxCount: 1 },      // Audio for original language
     { name: 'gallery', maxCount: 20 },    // Gallery images (up to 20)
     { name: 'image360', maxCount: 1 },
+    { name: 'fineart', maxCount: 20 },
   ]);
 
   uploader(req, res, function (err) {
@@ -40,5 +41,24 @@ router.get('/heritages', adminController.getAll);
 router.get('/heritages/:id', adminController.getById);
 router.put('/heritages/:id', uploadFieldsMiddleware, adminController.update);
 router.delete('/heritages/:id', adminController.delete);
+
+//
+// MUSIC ROUTES (YouTube link only)
+//
+
+router.post('/music', adminController.createMusic);
+router.get('/music', adminController.getAllMusic);
+router.get('/music/:id', adminController.getMusicById);
+router.delete('/music/:id', adminController.deleteMusic);
+
+//
+// FINEART ROUTES (YouTube link only)
+//
+
+router.post('/fineart', uploadFieldsMiddleware, adminController.createfineArt);
+router.get('/fineart', adminController.getAllfineArt);
+router.get('/fineart/:id', adminController.getfineArtById);
+router.delete('/fineart/:id', adminController.deletefineArt);
+
 
 module.exports = router;
