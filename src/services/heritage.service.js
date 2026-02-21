@@ -32,15 +32,19 @@ class HeritageService {
       ? `/uploads/image360/${files.image360[0].filename}`
       : null;
 
+    const musicAudioPath = files?.music_audio?.[0]?.filename
+      ? `/uploads/audio/${files.music_audio[0].filename}`
+      : null;
+
     // 1. Insert heritage
     const heritageResult = await db.query(
-      `INSERT INTO heritages (year_built, year_ranked, ranking_type, address, commune, district, province, image_url, notes, original_lang, image360, coordinates, category)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      `INSERT INTO heritages (year_built, year_ranked, ranking_type, address, commune, district, province, image_url, notes, original_lang, image360, coordinates, category, music_audio_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING id`,
       [
         year_built, year_ranked, ranking_type, address, commune, district, province,
         files?.image?.[0]?.filename ? `/uploads/images/${files.image[0].filename}` : null,
-        notes, input_lang, image360Path, parsedCoordinates, category
+        notes, input_lang, image360Path, parsedCoordinates, category, musicAudioPath
       ]
     );
     const heritageId = heritageResult.rows[0].id;
@@ -188,15 +192,28 @@ class HeritageService {
       newImage360 = `/uploads/image360/${files.image360[0].filename}`;
     }
 
+    // Music audio (âm nhạc)
+    let newMusicAudioUrl = oldData.music_audio_url;
+    if (files?.music_audio?.[0]?.filename) {
+      if (oldData.music_audio_url) {
+        try {
+          await fs.unlink(path.join(__dirname, '../..', oldData.music_audio_url));
+        } catch (e) {
+          console.error(`[Update] Failed to delete old music_audio: ${e.message}`);
+        }
+      }
+      newMusicAudioUrl = `/uploads/audio/${files.music_audio[0].filename}`;
+    }
+
     // 3. Update bảng heritages
     await db.query(
       `UPDATE heritages SET
         year_built = $1, year_ranked = $2, ranking_type = $3,
         address = $4, commune = $5, district = $6, province = $7,
-        image_url = $8, notes = $9, original_lang = $10, image360 = $11, coordinates = $12, category = $13, updated_at = NOW()
-       WHERE id = $14`,
+        image_url = $8, notes = $9, original_lang = $10, image360 = $11, coordinates = $12, category = $13, music_audio_url = $14, updated_at = NOW()
+       WHERE id = $15`,
       [year_built, year_ranked, ranking_type, address, commune, district, province,
-        imageUrl, notes, input_lang, newImage360, parsedCoordinates, category, id]
+        imageUrl, notes, input_lang, newImage360, parsedCoordinates, category, newMusicAudioUrl, id]
     );
     console.log(`[Heritage] Updated ID: ${id}`);
 
@@ -373,7 +390,7 @@ class HeritageService {
     const result = await db.query(
       `SELECT h.id, h.year_built, h.year_ranked, h.ranking_type,
               h.address, h.commune, h.district, h.province, h.image_url, h.category,
-              t.name, t.information, t.audio_url, h.image360, h.coordinates
+              h.music_audio_url, t.name, t.information, t.audio_url, h.image360, h.coordinates
        FROM heritages h
        LEFT JOIN heritage_translations t ON h.id = t.heritage_id AND t.lang = $1
        ORDER BY h.created_at DESC
@@ -413,6 +430,7 @@ class HeritageService {
         image_url: row.image_url ? BASE_URL + row.image_url : null,
         audio_url: row.audio_url ? BASE_URL + row.audio_url : null,
         image360: row.image360 ? BASE_URL + row.image360 : null,
+        music_audio_url: row.music_audio_url ? BASE_URL + row.music_audio_url : null,
         media_count: mediaCounts[row.id] || { images: 0, videos: 0 }
       })),
       pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
@@ -475,6 +493,7 @@ class HeritageService {
       image_url: heritage.image_url ? BASE_URL + heritage.image_url : null,
       audio_url: heritage.audio_url ? BASE_URL + heritage.audio_url : null,
       image360: heritage.image360 ? BASE_URL + heritage.image360 : null,
+      music_audio_url: heritage.music_audio_url ? BASE_URL + heritage.music_audio_url : null,
       available_languages: langsResult.rows.map(r => r.lang),
       gallery: gallery,
       youtube_links: youtubeLinks
@@ -495,6 +514,10 @@ class HeritageService {
 
     const image360 = await db.query(
       'SELECT image360 FROM heritages WHERE id = $1',
+      [id]
+    );
+    const musicAudio = await db.query(
+      'SELECT music_audio_url FROM heritages WHERE id = $1',
       [id]
     );
 
@@ -532,6 +555,15 @@ class HeritageService {
         await fs.unlink(path.join(__dirname, '../..', image360.rows[0].image360));
       } catch (e) {
         console.error(`Failed to delete: ${image360.rows[0].image360}`);
+      }
+    }
+
+    // Xóa music_audio file
+    if (musicAudio.rows[0]?.music_audio_url) {
+      try {
+        await fs.unlink(path.join(__dirname, '../..', musicAudio.rows[0].music_audio_url));
+      } catch (e) {
+        console.error(`Failed to delete music_audio: ${musicAudio.rows[0].music_audio_url}`);
       }
     }
 
