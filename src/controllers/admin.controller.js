@@ -1,5 +1,4 @@
 // src/controllers/admin.controller.js
-const { link } = require('../routes/admin.routes');
 const heritageService = require('../services/heritage.service');
 const musicService = require('../services/music.service');
 const fineArtService = require('../services/fineart.service')
@@ -298,7 +297,7 @@ const adminController = {
   // ===============================
 
   // Tạo fineart (upload nhiều ảnh)
-  async createfineArt(req, res) {
+  async createFineArt(req, res) {
     try {
       console.log('[Admin Controller] Creating fineart...');
       console.log('Files:', req.files?.fineart?.length || 0);
@@ -335,7 +334,7 @@ const adminController = {
   },
 
   // Lấy danh sách fineart
-  async getAllfineArt(req, res) {
+  async getAllFineArt(req, res) {
     try {
       const { page = 1, limit = 20 } = req.query;
 
@@ -356,7 +355,7 @@ const adminController = {
   },
 
   // Lấy chi tiết 1 fineart
-  async getfineArtById(req, res) {
+  async getFineArtById(req, res) {
     try {
       const { id } = req.params;
 
@@ -384,7 +383,7 @@ const adminController = {
   },
 
   // Xóa fineart
-  async deletefineArt(req, res) {
+  async deleteFineArt(req, res) {
     try {
       const { id } = req.params;
 

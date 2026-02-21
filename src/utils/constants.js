@@ -1,4 +1,5 @@
 // src/utils/constants.js
+// Keep RANKING_TYPES in sync with frontend HeritageManagement dropdown (or use GET /api/constants/ranking-types).
 
 const SUPPORTED_LANGUAGES = [
   { code: 'vi', name: 'Tiếng Việt', ttsCode: 'vi-VN' },
