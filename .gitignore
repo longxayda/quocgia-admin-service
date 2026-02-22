@@ -1,0 +1,14 @@
+.env
+node_modules
+
+uploads/audio/*
+uploads/images/*
+uploads/gallery/*
+uploads/image360/*
+uploads/fineart/*
+
+!uploads/audio/.gitkeep
+!uploads/images/.gitkeep
+!uploads/gallery/.gitkeep
+!uploads/image360/.gitkeep
+!uploads/fineart/.gitkeep
