@@ -289,6 +289,32 @@ class HeritageService {
       ? `/uploads/audio/${files.audio[0].filename}`
       : null;
 
+    // ⭐ FIX AUDIO UPDATE ĐỘC LẬP
+    if (uploadedAudioPath) {
+      console.log('[Update] Audio uploaded separately, updating original language audio');
+
+      // Xóa audio cũ của ngôn ngữ gốc
+      const oldAudio = await db.query(
+        'SELECT audio_url FROM heritage_translations WHERE heritage_id = $1 AND lang = $2',
+        [id, input_lang]
+      );
+
+      if (oldAudio.rows[0]?.audio_url) {
+        try {
+          await fs.unlink(path.join(__dirname, '../..', oldAudio.rows[0].audio_url));
+          console.log(`[Update] Deleted old audio: ${oldAudio.rows[0].audio_url}`);
+        } catch (e) { }
+      }
+
+      // Update audio mới
+      await db.query(
+        `UPDATE heritage_translations
+     SET audio_url = $1
+     WHERE heritage_id = $2 AND lang = $3`,
+        [uploadedAudioPath, id, input_lang]
+      );
+    }
+
     // 9. Cập nhật translations
     if (nameChanged || infoChanged || shouldRegenerate) {
       console.log(`[Update] Content changed or regenerate requested, updating translations...`);
