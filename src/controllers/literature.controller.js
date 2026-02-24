@@ -6,7 +6,10 @@ const literatureController = {
   async getAll(req, res) {
     try {
       const { page = 1, limit = 10 } = req.query;
-      const result = await literatureService.getAll(+page, +limit);
+      const result = await literatureService.getAll({
+        page: +page,
+        limit: +limit
+      });
       res.json(result);
     } catch (error) {
       console.error('GetAll error:', error);
@@ -18,11 +21,11 @@ const literatureController = {
   async getById(req, res) {
     try {
       const result = await literatureService.getById(req.params.id);
-      
+
       if (!result) {
         return res.status(404).json({ error: 'literature not found' });
       }
-      
+
       res.json(result);
     } catch (error) {
       console.error('GetById error:', error);

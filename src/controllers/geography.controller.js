@@ -6,7 +6,10 @@ const geographyController = {
   async getAll(req, res) {
     try {
       const { page = 1, limit = 10 } = req.query;
-      const result = await geographyService.getAll(+page, +limit);
+      const result = await geographyService.getAll({
+        page: +page, 
+        limit: +limit
+      });
       res.json(result);
     } catch (error) {
       console.error('GetAll error:', error);
